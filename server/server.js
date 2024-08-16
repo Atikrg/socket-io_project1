@@ -45,8 +45,7 @@ io.on('connection', (socket) => {
       const students = await Student.findAll();
       socket.emit("getData", { data: students.map(student => student.toJSON()) });
       
-      // Recursive call to continue fetching data
-      setImmediate(fetchData);
+      fetchData();
     } catch (err) {
       console.error('Error fetching data:', err);
     }

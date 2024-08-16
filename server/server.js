@@ -36,28 +36,28 @@ const Student = sequelize.define('Student', {
   timestamps: false
 });
 
-io.on("connection", async (socket) => {
-  try {
-    // Sync Sequelize models
-    await sequelize.authenticate();
-    console.log("Database connected");
+io.on('connection', (socket) => {
+  console.log('New client connected');
 
-    // Send initial data to the client
-    const students = await Student.findAll();
-    console.log('Initial student data:', students);
-    socket.emit("getfirst", { data: students.map(student => student.toJSON()) });
+  // Function to fetch and emit data
+  const fetchData = async () => {
+    try {
+      const students = await Student.findAll();
+      socket.emit("getData", { data: students.map(student => student.toJSON()) });
+      
+      // Recursive call to continue fetching data
+      setImmediate(fetchData);
+    } catch (err) {
+      console.error('Error fetching data:', err);
+    }
+  };
 
-    setInterval(async () => {
-      const updatedStudents = await Student.findAll();
-      console.log('Updated student data:', updatedStudents);
-      io.emit("students", { data: updatedStudents.map(student => student.toJSON()) });
-    }, 5000); // Adjust polling interval as needed
+  // Start fetching data automatically when a client connects
+  fetchData();
 
-    console.log("User connected");
-
-  } catch (error) {
-    console.error('Error setting up Sequelize:', error);
-  }
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
+  });
 });
 
 httpServer.listen(8000, () => console.log("Server running on port 8000"));

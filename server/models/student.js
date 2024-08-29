@@ -1,6 +1,6 @@
-// models/student.js
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database'); // Adjust path as needed
+// models/Student.js
+const { Sequelize, DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
 
 const Student = sequelize.define('Student', {
   rollno: {
@@ -21,4 +21,3 @@ const Student = sequelize.define('Student', {
 });
 
 module.exports = Student;
-

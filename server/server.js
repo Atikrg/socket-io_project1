@@ -1,7 +1,20 @@
+/* const express = require('express');
+const app = express();
+
+
+app.use(express.json());
+ */
+/* app.listen((8000), {
+  console.log("App is listening at port 8000");
+}) */
+
+
 const express = require("express");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
-const { Sequelize, DataTypes } = require("sequelize");
+
+const sequelize = require('./config/database'); 
+const Student = require('./models/student'); 
 
 const app = express();
 const httpServer = createServer(app);
@@ -11,39 +24,15 @@ const io = new Server(httpServer, {
   }
 });
 
-// Set up Sequelize
-const sequelize = new Sequelize('college', 'root', '', {
-  host: '127.0.0.1',
-  dialect: 'mysql'
-});
-
-// Define Student model
-const Student = sequelize.define('Student', {
-  rollno: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  department: {
-    type: DataTypes.STRING,
-    allowNull: false
-  }
-}, {
-  tableName: 'students',
-  timestamps: false
-});
 
 io.on('connection', (socket) => {
   console.log('New client connected');
 
-  // Function to fetch and emit data
   const fetchData = async () => {
     try {
       const students = await Student.findAll();
       socket.emit("getData", { data: students.map(student => student.toJSON()) });
+      console.log(students);
       
       fetchData();
     } catch (err) {
@@ -51,7 +40,6 @@ io.on('connection', (socket) => {
     }
   };
 
-  // Start fetching data automatically when a client connects
   fetchData();
 
   socket.on('disconnect', () => {
@@ -59,4 +47,4 @@ io.on('connection', (socket) => {
   });
 });
 
-httpServer.listen(8000, () => console.log("Server running on port 8000"));
+httpServer.listen(8000, () => console.log("Server running on port 8000")); 
